@@ -14,7 +14,7 @@ ssl_key='/etc/ssl/certs/certificate.key'
 ssl_cert='/etc/ssl/certs/certificate.crt'
 
 gpg_gen_key() {
-  su -m -c "$gpg --batch --gen-key <<EOF
+  $gpg --batch --gen-key <<EOF
     Key-Type: 1
 		Key-Length: ${key_length:-2048}
 		Subkey-Type: 1
@@ -23,18 +23,18 @@ gpg_gen_key() {
 		Name-Email: ${key_email:-passbolt@yourdomain.com}
 		Expire-Date: ${key_expiration:-0}
 		%commit
-EOF" -ls /bin/bash nginx
+EOF
 
-  su -m -c "$gpg --armor --export-secret-keys $key_email > $gpg_private_key" -ls /bin/bash nginx
-  su -m -c "$gpg --armor --export $key_email > $gpg_public_key" -ls /bin/bash nginx
+  $gpg --armor --export-secret-keys $key_email > $gpg_private_key
+  $gpg --armor --export $key_email > $gpg_public_key
 }
 
 gpg_import_key() {
 
-  local key_id=$(su -m -c "gpg --with-colons $gpg_private_key | grep sec |cut -f5 -d:" -ls /bin/bash nginx)
+  local key_id=$(gpg --with-colons $gpg_private_key | grep sec |cut -f5 -d:)
 
-  su -m -c "$gpg --batch --import $gpg_public_key" -ls /bin/bash nginx
-  su -m -c "gpg -K $key_id" -ls /bin/bash nginx || su -m -c "$gpg --batch --import $gpg_private_key" -ls /bin/bash nginx
+  $gpg --batch --import $gpg_public_key
+  gpg -K $key_id || $gpg --batch --import $gpg_private_key
 }
 
 core_setup() {
@@ -88,7 +88,7 @@ app_setup() {
   local default_fingerprint='2FC8945833C51946E937F9FED47B0811573EE67E'
   local default_registration='public'
   local gpg_home='/var/lib/nginx/.gnupg'
-  local auto_fingerprint=$(su -m -c "$gpg --fingerprint |grep fingerprint| awk '{for(i=4;i<=NF;++i)printf \$i}'" -ls /bin/bash nginx)
+  local auto_fingerprint=$($gpg --fingerprint |grep fingerprint| awk '{for(i=4;i<=NF;++i)printf \$i}')
 
   cp $app_config{.default,}
   sed -i s:$default_home:$gpg_home:g $app_config
@@ -143,7 +143,7 @@ install() {
   tables=$(mysql -u ${database_user:-passbolt} -h $database_host -p -BN -e "SHOW TABLES FROM ${database_name:-passbolt}" -p${database_pass:-P4ssb0lt} |wc -l)
 
   if [ $tables -eq 0 ]; then
-    su -c "/var/www/passbolt/app/Console/cake install --send-anonymous-statistics true --no-admin" -ls /bin/bash nginx
+    /var/www/passbolt/app/Console/cake install --send-anonymous-statistics true --no-admin
   else
     echo "Enjoy! ☮"
   fi
@@ -167,7 +167,7 @@ email_cron_job() {
   echo "* * * * * run-parts $cron_task_dir" >> $root_crontab
   echo "#!/bin/sh" > $cron_task
   chmod +x $cron_task
-  echo "su -c \"$process_email\" -ls /bin/bash nginx" >> $cron_task
+  echo "$process_email" >> $cron_task
 
   crond -f -c /etc/crontabs
 }
