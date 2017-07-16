@@ -65,8 +65,14 @@ RUN curl -sS https://getcomposer.org/installer | php && \
 RUN mkdir /var/www/passbolt && curl -sSL $PASSBOLT_URL | \
     tar zxf - -C /var/www/passbolt --strip-components 1 && \
     chown -R nginx:nginx /var/www/passbolt && \
+    chgrp -R 0 /var/www/passbolt/app/Config && \
+    chmod -R g+w /var/www/passbolt/app/Config && \
     chmod -R +w /var/www/passbolt/app/tmp && \
-    chmod +w /var/www/passbolt/app/webroot/img/public
+    chmod +w /var/www/passbolt/app/webroot/img/public && \
+    chgrp -R 0 /etc/ssl/certs && \
+    chmod -R g+w /etc/ssl/certs && \
+    chgrp -R 0 /etc/php5 && \
+    chmod -R g+w /etc/php5
 
 COPY conf/passbolt.conf /etc/nginx/conf.d/default.conf
 COPY bin/docker-entrypoint.sh /docker-entrypoint.sh
