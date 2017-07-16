@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -exo pipefail
 
 gpg_private_key=/var/www/passbolt/app/Config/gpg/serverkey.private.asc
 gpg_public_key=/var/www/passbolt/app/Config/gpg/serverkey.asc
