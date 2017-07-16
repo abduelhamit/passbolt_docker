@@ -5,6 +5,7 @@ set -eo pipefail
 gpg_private_key=/var/www/passbolt/app/Config/gpg/serverkey.private.asc
 gpg_public_key=/var/www/passbolt/app/Config/gpg/serverkey.asc
 gpg=$(which gpg)
+export GNUPGHOME=/tmp/.gnupg
 
 core_config='/var/www/passbolt/app/Config/core.php'
 db_config='/var/www/passbolt/app/Config/database.php'
